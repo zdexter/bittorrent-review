@@ -1,10 +1,4 @@
-"""Torrent file object, representing only data encoded in the torrent file
-
->>> t = Torrent('./example.torrent'); t
-Torrent('./example.torrent')
->>> str(t) #doctest: +ELLIPSIS
-'<Torrent Object at ...; contents: Distributed by Mininova.txt; TorrentFreak BitTorrent Speed Tips 101.pdf>'
-"""
+#!/usr/bin/env python
 import logging
 import datetime
 import time
@@ -29,8 +23,6 @@ class Torrent(object):
     """Torrent file data
 
     >>> t = Torrent('soulpurge.torrent')
-    >>> t.files
-    ['Content/coverart/front.jpg', 'Content/soulPURGE - 01 - I Miss You.mp3', 'Content/soulPURGE - 02 - I Need You.mp3', 'Description.txt', 'LegalTorrents.txt', 'License.txt']
     """
     def __init__(self, filename):
         self.filename = filename
@@ -133,15 +125,15 @@ class ActiveTorrent(Torrent):
 
         peers_data = response_data['peers']
         peer_addresses = []
+        port = lambda x: 256*ord(x[4])+ord(x[5])
         for sixbits in [peers_data[i:i+6] for i in range(0,len(peers_data),6)]:
             peer_addresses.append(
-                    ('.'.join(str(ord(ip_part)) for ip_part in sixbits[:4]), 256*ord(sixbits[4])+ord(sixbits[5])))
+                    ('.'.join(str(ord(ip_part)) for ip_part in sixbits[:4]), port(sixbits)))
         self.tracker_peer_addresses = tuple(peer_addresses)
         return True
 
-    def get_external_addr(self):
+    def get_external_addr(self, port=80):
         s = socket.socket()
-        port = 80
         addr = self.announce_url
         if self.announce_url.count(':') == 2:
             _, first, rest = self.announce_url.split(':')
@@ -157,9 +149,9 @@ class ActiveTorrent(Torrent):
         s.close()
         return ip
 
-    def timer_event(self):
+    def timer_event(self, interval=10):
         self.run_strategy()
-        self.client.reactor.start_timer(10, self)
+        self.client.reactor.start_timer(interval, self)
 
     def run_strategy(self):
         logging.info('%s running strategy %s', self, self.strategy.__name__)
@@ -193,11 +185,7 @@ class ActiveTorrent(Torrent):
 
     def check_piece_hashes(self):
         """Returns the number of piece hashes checked"""
-        checked_out = 0
-        for i in range(len(self.piece_hashes)):
-            if self.check_piece_hash(i):
-                checked_out += 1
-        return checked_out
+        return self.piece_hashes.count(True)
 
     def load(self, filename):
         if os.path.isdir(filename):
@@ -284,4 +272,11 @@ def test():
     doctest.testmod(optionflags=doctest.ELLIPSIS)
 
 if __name__ == '__main__':
+    """Torrent file object, representing only data encoded in the torrent file
+
+    >>> t = Torrent('./example.torrent'); t
+    Torrent('./example.torrent')
+    >>> str(t) #doctest: +ELLIPSIS
+    '<Torrent Object at ...; contents: Distributed by Mininova.txt; TorrentFreak BitTorrent Speed Tips 101.pdf>'
+    """
     test()
