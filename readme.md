@@ -21,6 +21,14 @@ peer.send_msg needs to take care of housekeeping for these messages
 individual messages need to time out, this housekeeping needs to
 happen even if now 
 
+installation
+-------------
+virtualenv --distribute venv && pip install -r requirements.txt
+
+usage
+-------------
+source venv/bin/activate && ./torrent.py
+
 recently done
 -------------
 
