@@ -1,0 +1,21 @@
+reactor.py
+  :80 - does [:] do anything to an array?
+
+  I like that you create a poll() method and are explicitly calling it in a loop.
+  Perhaps loop() should be implicit in the reactor? It seems good to encapsulate this
+  behavior in the reactor class. Then it'd be easier to keep things clean by starting 
+  the reactor in one place regardless of whether you're seeding or leeching.
+  Also, this would presumably make it easier/possible to leech and seed from the same client.
+
+network.py
+  die() nicely encapsulates end-of-connection behavior. Super clean way of doing it.
+
+torrentstrategy.py
+  connect_and_ask_n_peers() needs a docstring. What are you asking them - whether they'll
+   handshake? Which pieces they have?
+
+torrent.py
+  Nice work keeping __init__() clean by moving initialization from torrent files into its
+   own function.
+  :50 - I couldn't seem to change the representation of an array in the repl by
+   using the * operator. What does this line do - destructuring?
